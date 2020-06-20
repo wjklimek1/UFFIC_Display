@@ -53,6 +53,13 @@
 // ADC_tab[0] = ADC_FEEDBACK, ADC_tab[1] = ADC_DETECT
 uint32_t ADC_tab[2];
 
+//PWM parameters - may need to be modified in final PCB
+uint32_t PWM_Duty = 0;
+uint32_t PWM_max = 100;
+uint32_t PWM_min = 10;
+uint16_t ADC_target = 770;  //target step-up voltage
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,12 +71,21 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-//Timer overflow callback function - update step-up PWM duty 1000 times per second
+//Timer overflow callback function - update step-up PWM duty in 1ms intervals
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if(htim->Instance == TIM16)
-	{
-		//Step-up converter logic here
+	if (htim->Instance == TIM16) {
+		//Step-up converter logic
+		if (ADC_tab[0] < ADC_target && PWM_Duty < PWM_max)
+		{
+			PWM_Duty++;
+			TIM17->CCR1 = PWM_Duty;
+		}
+		if (ADC_tab[0] > ADC_target && PWM_Duty > PWM_min)
+		{
+			PWM_Duty--;
+			TIM17->CCR1 = PWM_Duty;
+		}
 	}
 }
 /* USER CODE END 0 */
@@ -109,9 +125,10 @@ int main(void)
   MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_TIM_Base_Start_IT(&htim16);
+  HAL_TIM_Base_Start_IT(&htim16);             //start timer16 - used to update step-up PWM in constant intervals
   HAL_ADCEx_Calibration_Start(&hadc);
-  HAL_ADC_Start_DMA(&hadc, ADC_tab, 2);
+  HAL_ADC_Start_DMA(&hadc, ADC_tab, 2);       //start ADC in DMA mode
+  HAL_TIM_PWM_Start(&htim17, TIM_CHANNEL_1);  //start timer17 - generate PWM for step-up
 
   /* USER CODE END 2 */
 
