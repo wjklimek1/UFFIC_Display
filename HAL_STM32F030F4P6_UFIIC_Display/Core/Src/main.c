@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "LCD_HD44780.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -123,23 +123,36 @@ int main(void)
   MX_I2C1_Init();
   MX_TIM17_Init();
   MX_TIM16_Init();
+  MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Base_Start_IT(&htim16);             //start timer16 - used to update step-up PWM in constant intervals
   HAL_ADCEx_Calibration_Start(&hadc);
   HAL_ADC_Start_DMA(&hadc, ADC_tab, 2);       //start ADC in DMA mode
   HAL_TIM_PWM_Start(&htim17, TIM_CHANNEL_1);  //start timer17 - generate PWM for step-up
+  HAL_TIM_Base_Start(&htim14);                //start timer14 - base for microseconds delay function
+
+  LCD_Init();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
+	while (1)
+	{
+		LCD_Cls();
+		LCD_Locate(0, 0);
+		LCD_String("UFIIC Display");
+		HAL_Delay(2000);
+		LCD_Locate(0, 1);
+		LCD_String("First test");
+		HAL_Delay(2000);
+		LCD_Cls();
+		HAL_Delay(2000);
+		/* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-  }
+		/* USER CODE BEGIN 3 */
+	}
   /* USER CODE END 3 */
 }
 
